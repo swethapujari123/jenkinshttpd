@@ -37,20 +37,23 @@ environment {
         '''
     }
 }        
+stage('Deploy on Tomcat') {
+    agent { label 'agent-2' }
 
-        stage('Deploy on Tomcat') {
-            agent { label 'agent-2' }
+    steps {
+        sh '''
+        pkill -f "org.apache.catalina.startup.Bootstrap" || true
 
-            steps {
-                sh """
-                sudo systemctl stop tomcat
+        sleep 5
 
-                rm -rf /mnt/apache-tomcat-10.1.56/webapps/
-                mv /tmp/myapp.war /mnt/apache-tomcat-10.1.56/webapps/myapp.war
+        rm -rf /mnt/apache-tomcat-10.1.56/webapps/*
 
-                sudo systemctl start tomcat
-                """
-            }
-        }
+        mv /tmp/myapp.war /mnt/apache-tomcat-10.1.56/webapps/myapp.war
+
+        /mnt/apache-tomcat-10.1.56/bin/startup.sh
+        '''
+    }
+}
+        
     }
 }
