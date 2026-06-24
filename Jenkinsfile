@@ -32,7 +32,7 @@ pipeline {
 
             steps {
                 sh """
-                scp target/*.war root@172.31.30.133 :/tmp/myapp.war
+                scp target/*.war root@172.31.30.133:/tmp/myapp.war
                 """
             }
         }
