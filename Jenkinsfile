@@ -1,13 +1,11 @@
 pipeline {
 
     agent none
-
-    environment {
-        DEPLOY_HOST = "172.31.30.133"
-        DEPLOY_USER = "root"
-        TOMCAT_PATH = "/mnt/apache-tomcat-10.1.56/webapps"
-    }
-
+environment {
+    DEPLOY_HOST = "172.31.30.133"
+    DEPLOY_USER = "ec2-user"
+    TOMCAT_PATH = "/mnt/apache-tomcat-10.1.56/webapps"
+}    
     stages {
 
         stage('Checkout') {
@@ -26,16 +24,19 @@ pipeline {
                 sh 'mvn clean package'
             }
         }
+        
+  stage('Copy WAR to Agent2') {
+    agent { label 'agent-1' }
 
-        stage('Copy WAR to Agent2') {
-            agent { label 'agent-1' }
-
-            steps {
-                sh """
-                scp target/*.war root@172.31.30.133:/tmp/myapp.war
-                """
-            }
-        }
+    steps {
+        sh '''
+        scp -i /home/ec2-user/mykey.pem \
+        -o StrictHostKeyChecking=no \
+        target/myapp.war \
+        ec2-user@172.31.30.133:/tmp/myapp.war
+        '''
+    }
+}        
 
         stage('Deploy on Tomcat') {
             agent { label 'agent-2' }
